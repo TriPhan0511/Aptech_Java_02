@@ -1,0 +1,9 @@
+s1
+Alex Ferguson
+5.5
+s2
+Brad Pitt
+1.0
+s3
+Hillary Duff
+5.5
