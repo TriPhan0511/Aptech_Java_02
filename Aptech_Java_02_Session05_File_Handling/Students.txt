@@ -1,0 +1,9 @@
+s1
+alex ferguson
+5.5
+s2
+brad pitt
+4.0
+s3
+hillary duff
+5.5
