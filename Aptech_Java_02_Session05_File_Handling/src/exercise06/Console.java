@@ -2,11 +2,26 @@ package exercise06;
 
 import java.util.Scanner;
 
+/**
+ * This class consists of some static methods which used 
+ * to get data from the user input from the console.
+ * @version 1.0 2021-11-29
+ * @author Tri Phan
+ *
+ */
 public class Console 
 {
-	public static String getString(Scanner sc, String prompt)
+//	Initializes a Scanner object which used to get data from the user.
+	private static Scanner sc = new Scanner(System.in);
+	
+	/**
+	 * Gets a string from the user input from the console.
+	 * @param prompt A String which used to ask the user enter a string.
+	 * @param errorMessage A String displays error. 
+	 * @return A String object.
+	 */
+	public static String nextString(String prompt, String errorMessage)
 	{
-		
 		String s;
 		while (true)
 		{
@@ -14,31 +29,94 @@ public class Console
 			s = sc.nextLine();
 			if (s == null || s.length() == 0)
 			{
-				System.out.println("The input should not be empty.");
+				System.out.println(errorMessage);
 				continue;
 			}
 			return s;
 		}
 	}
 	
-	public static char getChar(Scanner sc, String prompt)
+	/**
+	 * Gets a character from the user input from the console.
+	 * @param prompt A String which used to ask the user enter a string.
+	 * @param errorMessage A String displays error.
+	 * @return A char.
+	 */
+	public static char nextChar(String prompt, String errorMessage)
 	{
-		return getString(sc, prompt).charAt(0);
+		return nextString(prompt, errorMessage).charAt(0);
 	}
 	
-	public static double getDouble(Scanner sc, String prompt)
+	/**
+	 * Gets an integer from the user input from the console.
+	 * @param prompt A String which used to ask the user enter a string.
+	 * @param errorMessage A String displays error.
+	 * @return An integer.
+	 */
+	public static int nextInt(String prompt, String errorMessage)
 	{
+		String s;
 		while (true)
 		{
 			System.out.print(prompt);
+			s = sc.nextLine();
 			try
 			{
-				return Double.parseDouble(sc.nextLine());
+				return Integer.parseInt(s);
 			}
 			catch (NumberFormatException e)
 			{
-				System.out.println("Invalid double. Try again.");
+				System.out.println(errorMessage);
+			}
+		}
+	}
+	
+	/**
+	 * Gets a double from the user input from the console.
+	 * @param prompt A String which used to ask the user enter a string.
+	 * @param errorMessage A String displays error.
+	 * @return A double.
+	 */
+	public static double nextDouble(String prompt, String errorMessage)
+	{
+		String s;
+		while (true)
+		{
+			System.out.print(prompt);
+			s = sc.nextLine();
+			try
+			{
+				return Double.parseDouble(s);
+			}
+			catch (NumberFormatException e)
+			{
+				System.out.println(errorMessage);
 			}
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

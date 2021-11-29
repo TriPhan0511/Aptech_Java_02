@@ -1,6 +1,9 @@
 s1
 Alex Ferguson
-5.5
+7.5
 s3
-Hillary Duff
-5.5
+White Rose
+7.5
+s5
+Jenny Brad
+7.5

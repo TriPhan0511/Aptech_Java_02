@@ -1,4 +1,4 @@
-package exercise06_02;
+package exercise06;
 
 import java.util.List;
 import java.io.FileWriter;
@@ -12,7 +12,7 @@ import java.io.IOException;
  * This class consists of two static methods which are
  * used to write students' information in a list to a 
  * text file, and vice versa, read students' information
- * in a text file, then initialize Student objects from 
+ * from a text file, then initialize Student objects from 
  * those information and add them to a list. 
  * 
  * @version 1.0 2021-11-29
