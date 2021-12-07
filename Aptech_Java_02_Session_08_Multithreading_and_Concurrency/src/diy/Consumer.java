@@ -14,13 +14,17 @@ public class Consumer implements Runnable
 	@Override
 	public void run()
 	{
-		try
-		{ 
-			consume();
+		while (true)
+		{
+			try
+			{ 
+				consume();
+			}
+			catch (InterruptedException e)
+			{}
 		}
-		catch (InterruptedException e)
-		{}
 	}
+	
 	
 	private void consume() throws InterruptedException
 	{
@@ -35,8 +39,9 @@ public class Consumer implements Runnable
 						+ " is waiting");
 				taskQueue.wait();
 			}
+			Thread.sleep(500);
 			int i = taskQueue.remove(0);
-			System.out.println("Consumed: " + i);
+			System.out.println("** Consumed: " + i);
 			taskQueue.notifyAll();
 		}
 	}
