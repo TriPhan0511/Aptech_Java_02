@@ -5,12 +5,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * This program tests that the database and 
@@ -19,20 +18,17 @@ import java.util.Properties;
  * @author Tri Phan
  *
  */
-public class TestDB 
+public class TestDB_DIY 
 {
 	public static void main(String[] args)
 	{
 		try
 		{
-			runTest();
+			testDB();
 		}
 		catch (SQLException e)
 		{
-			for (Throwable t : e)
-			{
-				t.printStackTrace();
-			}
+			e.printStackTrace();
 		}
 		catch (IOException e)
 		{
@@ -46,31 +42,41 @@ public class TestDB
 	 * @throws SQLException
 	 * @throws IOException
 	 */
-	public static void runTest()
+	private static void testDB()
 		throws SQLException, IOException
 	{
+		String command;
 		try
 		(
 			Connection conn = getConnection();
 			Statement stat = conn.createStatement();
 		)
 		{
-			stat.executeUpdate("DROP TABLE IF EXISTS Greetings");
-			stat.executeUpdate("CREATE TABLE Greetings (Message CHAR(20))");
-			stat.executeUpdate("INSERT INTO Greetings VALUES ('Aloha, World!')");
 			
+			command = "DROP TABLE IF EXISTS Greetings2";
+			stat.executeUpdate(command);
+			command = "CREATE TABLE Greetings2 (Message char(100))";
+			stat.executeUpdate(command);
+			command = "INSERT INTO Greetings2 (Message) "
+					+ "VALUES ('Aloha, world!'), "
+					+ "('Good morning, sir!'), "
+					+ "('See you soon.')";
+			stat.executeUpdate(command);
+			
+			command = "SELECT * FROM Greetings2";
 			try
 			(
-					ResultSet result = stat.executeQuery("SELECT * FROM Greetings");
+				ResultSet result = stat.executeQuery(command);
 			)
 			{
-				if (result.next())
+				while (result.next())
 				{
-//					System.out.println(result.getString(1));
-					System.out.println(result.getString("Message"));
+					System.out.println(result.getString(1));
 				}
 			}
-			stat.executeUpdate("DROP TABLE Greetings");
+			
+			command = "DROP TABLE IF EXISTS Greetings2";
+			stat.executeUpdate(command);
 		}
 	}
 	
@@ -78,13 +84,14 @@ public class TestDB
 	 * Gets a connection from the properties specified in the file database.properties.
 	 * @return the database connection.
 	 */
-	public static Connection getConnection()
+	private static Connection getConnection()
 		throws SQLException, IOException
 	{
 		var props = new Properties();
+		
 		try
 		(
-			InputStream in = Files.newInputStream(Paths.get("database.properties"))
+			InputStream in = Files.newInputStream(Paths.get("database.properties"));
 		)
 		{
 			props.load(in);
@@ -97,17 +104,9 @@ public class TestDB
 		String url = props.getProperty("jdbc.url");
 		String user = props.getProperty("jdbc.user");
 		String password = props.getProperty("jdbc.password");
-		
 		return DriverManager.getConnection(url, user, password);
 	}
 }
-
-
-
-
-
-
-
 
 
 
