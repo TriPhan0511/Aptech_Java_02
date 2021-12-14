@@ -14,7 +14,7 @@ import java.util.Properties;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-public class AuthorQueryTest 
+public class AuthorQueryTest_DIY 
 {
 	public static void main(String[] args)
 	{
