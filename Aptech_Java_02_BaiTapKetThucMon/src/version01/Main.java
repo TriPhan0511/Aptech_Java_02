@@ -1,3 +1,4 @@
+package version01;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -68,20 +69,21 @@ public class Main
 				}
 			}			
 			
+
+			
+//			Requirement 2: Add new student, display the content in the tables...
 //			Fill the lists: studentIDs, subjectCodes
 			fillListOfStudentIDs(conn, studentIDs);
 			fillListOfSubjects(conn, subjects);
 			fillListOfSubjectCodes(conn, subjectCodes);
 			fillListOfCombinationOfStudentCodeAndSubjectCode(conn, scores);
-			
-//			Requirement 2: Add new student, display the content in the tables...
 			char choice;
 			do
 			{
 //				Menu options
 				System.out.println("\n----- Welcome to Student Management Application! -----\n");
 				System.out.println("1. Add a new student");
-				System.out.println("2. Add or update scores for existing students");		
+				System.out.println("2. Add new or edit scores for existing students");		
 				System.out.println("3. Show the personal information, score\n"
 						+ "	and ranking of a specific student in the database.");
 				System.out.println("4. Show the personal information, scores\n"
@@ -91,10 +93,12 @@ public class Main
 				switch (choice)
 				{
 				case '1':
-					addStudent(conn, studentIDs, subjectCodes, subjects, scores);
+					addStudent(conn, 
+							studentIDs, subjectCodes, subjects, scores);
 					break;
 				case '2':
-					addOrUpdateScoreForExistingStudent(conn, scores, studentIDs, subjectCodes, subjects);
+					addOrUpdateScoreForExistingStudent(conn, 
+							scores, studentIDs, subjectCodes, subjects);
 					break;
 				case '3':
 					searchAStudent(conn, studentIDs);
@@ -103,6 +107,7 @@ public class Main
 					showStudents(conn, studentIDs);
 					break;
 				case '5':
+					System.out.println("\nGoodbye!");
 					break;
 					default:
 						System.out.println("Wrong choice. Please enter a number between 1 and 5");
@@ -124,9 +129,13 @@ public class Main
 	
 	/**
 	 * Gets student id and subject code from the user input from the console.
-	 * 
-	 * @param conn
-	 * @return
+	 * @param conn The database connection.
+	 * @param studentIDs An list of student ids which used for checking 
+	 * 	an entered id exists in the Student table or not.
+	 * @param subjectCodes An list of subject codes which used for validating 
+	 * 	an entered subject code.
+	 * @param subjects A list of combination of subject code and subject name.
+	 * @return An array containing student id and subject code entered by the user.
 	 * @throws SQLException
 	 */
 	private static String[] getStudentIDAndSubjectCodeFromUserInput(Connection conn, 
@@ -183,10 +192,20 @@ public class Main
 	}
 	
 	/**
-	 * Gets data from user input from the console,
-	 * and add a new record to the Scores table.
+	 
 	 * 
 	 * @param conn
+	 */
+	
+	/**
+	 * Gets data from user input from the console,
+	 * and add a new record to the Scores table. 
+	 * @param conn The database connection
+	 * @param scores
+	 * @param studentIDs
+	 * @param subjectCodes
+	 * @param subjects
+	 * @throws SQLException
 	 */
 	private static void addOrUpdateScoreForExistingStudent(Connection conn, 
 				List<String> scores, List<String> studentIDs, List<String> subjectCodes, List<String> subjects)
@@ -197,17 +216,16 @@ public class Main
 		String tempStudentID = array[0];
 		String tempSubjectCode = array[1];
 		
-//		Show the score based on student id and subject code have just entered
-		showScoreBasedOnStudentIDAndSubjectCode(conn, tempStudentID, tempSubjectCode);
-
 		insertOrUpdateRecordToScoresTable(conn, tempStudentID, tempSubjectCode, scores);
 	}
 	
 	/**
 	 * Add a new record to the Scores table
-	 * 
-	 * @param conn The database connetion.
-	 * @param studentID A student id.
+	 * @param conn
+	 * @param studentID
+	 * @param subjectCodes
+	 * @param subjects
+	 * @param scores
 	 * @throws SQLException
 	 */
 	private static void addScoreForNewStudent(Connection conn, String studentID,
@@ -243,10 +261,10 @@ public class Main
 	
 	/**
 	 * Insert or update a record in the Scores table in the database.
-	 * 
 	 * @param conn
 	 * @param tempStudentID
 	 * @param tempSubjectCode
+	 * @param scores
 	 * @throws SQLException
 	 */
 	private static void insertOrUpdateRecordToScoresTable(Connection conn,
@@ -259,14 +277,9 @@ public class Main
 //		 (tempStudentID, tempSubjectCode, score) to Scores table.
 		if (scores.indexOf((tempStudentID + " " + tempSubjectCode).toLowerCase()) != -1)
 		{
-//			char wantToUpdate = Console.nextChar(
-//					"The record (" 
-//							+ tempStudentID 
-//							+ ", " 
-//							+ tempSubjectCode 
-//							+ ") exists in the Scores table.\n"
-//							+ "Do you want to update the record (y/n)? "
-//					);
+//			Show the score based on student id and subject code have just entered
+			showScoreBasedOnStudentIDAndSubjectCode(conn, tempStudentID, tempSubjectCode);
+			
 			char wantToUpdate = Console.nextChar("\nDo you want to update the record (y/n)? ");
 			if (wantToUpdate == 'y' || wantToUpdate == 'Y')
 			{
@@ -315,13 +328,13 @@ public class Main
 		}
 	}
 	
+	
 	/**
 	 * Add a new record to the Scores table.
-	 * 
-	 * @param conn The database connection.
-	 * @param studentID A string represents a student id.
-	 * @param subjectCode A string represents a subject code.
-	 * @param score A double represents a score.
+	 * @param conn
+	 * @param studentID
+	 * @param subjectCode
+	 * @param score
 	 * @throws SQLException
 	 */
 	private static void addScore(Connection conn, 
@@ -344,7 +357,6 @@ public class Main
 	
 	/**
 	 * Updates a record in the Scores table.
-	 * 
 	 * @param conn
 	 * @param studentID
 	 * @param subjectCode
@@ -369,7 +381,6 @@ public class Main
 	
 	/**
 	 * Add a new record to the Student table.
-	 * 
 	 * @param conn
 	 * @param studentIDs
 	 * @param subjectCodes
@@ -451,7 +462,6 @@ public class Main
 	/**
 	 * Prints out the personal information (id, name, date of birth, phone number),
 	 *  average score, ranking, and score of each subject of students in a list.
-	 * 
 	 * @param conn
 	 * @param studentIDs
 	 * @throws SQLException
@@ -477,10 +487,9 @@ public class Main
 	/**
 	 * Gets a student id from user input and if that id exists in the Students table,
 	 * prints out the personal information, average score, ranking and score of each subject
-	 * of the student who has that id.
-	 * 
-	 * @param conn The database connection.
-	 * @param studentIDs 
+	 * of the student who has that id. 
+	 * @param conn
+	 * @param studentIDs
 	 * @throws SQLException
 	 */
 	private static void searchAStudent(Connection conn, List<String> studentIDs)
@@ -503,10 +512,9 @@ public class Main
 	
 	/**
 	 * Prints out the personal information (id, name, date of birth, phone number),
-	 *  average score, ranking, and score of each subject of a specific student.
-	 * 
-	 * @param conn The database connection.
-	 * @param studentID The string represents a student id.
+	 *  average score, ranking, and score of each subject of a specific student. 
+	 * @param conn
+	 * @param studentID
 	 * @throws SQLException
 	 */
 	private static void showAStudent(Connection conn, String studentID) 
@@ -518,7 +526,6 @@ public class Main
 	
 	/**
 	 * Prints out the scores of a specific student.
-	 * 
 	 * @param conn
 	 * @param studentID
 	 * @throws SQLException
@@ -577,7 +584,6 @@ public class Main
 	
 	/**
 	 * Prints out the average score and ranking of a specific student.
-	 * 
 	 * @param conn
 	 * @param studentID
 	 * @throws SQLException
@@ -620,7 +626,6 @@ public class Main
 	
 	/**
 	 * Fill list of student ids.
-	 * 
 	 * @param conn The database connection.
 	 * @param list A list of student ids.
 	 * @throws SQLException
@@ -640,7 +645,6 @@ public class Main
 	
 	/**
 	 * Fill an array list of subject codes.
-	 * 
 	 * @param conn
 	 * @param list
 	 * @throws SQLException
@@ -659,7 +663,6 @@ public class Main
 	
 	/**
 	 * Fill an array list of subjects
-	 * 
 	 * @param conn
 	 * @param list
 	 * @throws SQLException
@@ -680,7 +683,6 @@ public class Main
 	
 	/**
 	 * Fill an array list of scores
-	 * 
 	 * @param conn
 	 * @param list
 	 * @throws SQLException
@@ -703,7 +705,6 @@ public class Main
 	
 	/**
 	 * Prints out the content of a array list to the console.
-	 * 
 	 * @param list
 	 */
 	private static void showList(List<String> list)
@@ -716,7 +717,6 @@ public class Main
 	
 	/**
 	 * Gets a connection from the properties specified in the file database.properties.
-	 * 
 	 * @return The database connection.
 	 * @throws SQLException
 	 * @throws IOException
