@@ -1,22 +1,20 @@
 package version02;
 
-import java.time.LocalDate;
 import java.util.List;
 
-public class Student 
+public class Student_0 
 {
 	private String id;
 	private String name;
-	private LocalDate dob;
-//	private String dob;
+	private String dob;
 	private String phoneNumber;
 	
 	private List<Subject> subjects;
 	
-	public Student() {}
+	public Student_0() {}
 	
-	public Student(String id, String name,
-			LocalDate dob, String phoneNumber)
+	public Student_0(String id, String name,
+			String dob, String phoneNumber)
 	{
 		this.id = id;
 		this.name = name;
@@ -24,8 +22,7 @@ public class Student
 		this.phoneNumber = phoneNumber;
 	}
 	
-	public Student(String id, String name,
-			LocalDate dob, String phoneNumber, List<Subject> subjects)
+	public Student_0(String id, String name, String dob, String phoneNumber, List<Subject> subjects)
 	{
 		this(id, name, dob, phoneNumber);
 		this.subjects = subjects;
@@ -46,7 +43,7 @@ public class Student
 		return this.phoneNumber;
 	}
 	
-	public LocalDate getDOB()
+	public String getDOB()
 	{
 		return this.dob;
 	}
@@ -70,27 +67,3 @@ public class Student
 		return buildder.toString();
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
