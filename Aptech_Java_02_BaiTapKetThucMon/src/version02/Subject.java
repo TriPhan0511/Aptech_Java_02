@@ -27,4 +27,47 @@ public class Subject
 	{
 		return this.score;
 	}
+	
+	public void showMe()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("Subject Code: ");
+		builder.append(this.code);
+		builder.append(", Subject Name: ");
+		builder.append(this.name);
+		builder.append(", Score: ");
+		builder.append(score);
+		System.out.println(builder.toString());
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

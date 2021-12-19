@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -18,109 +19,225 @@ import java.util.Properties;
 public class DatabaseHandler 
 {
 	/**
+	 * Fetches a student with his basic information, scores,
+	 * 	average score,and ranking from the database.
+	 * @param conn
+	 * @param studentID
+	 * @return
+	 * @throws SQLException
+	 */
+	public Student fetchAStudent(Connection conn, String studentID)
+		throws SQLException
+	{
+		Student tempStudent;
+		String averageScoreAndRanking;
+		double tempAverageScore;
+		String tempRanking;
+		 
+		averageScoreAndRanking = fetchAverageScoreAndRanking(conn, studentID);
+//		Two patterns of the string averageScoreAndRanking: 
+//		Average Score: 4.5, Ranking: Fail
+//		or Average Score: , Ranking:
+		int firstColonPos = averageScoreAndRanking.indexOf(":");
+		int commaPos = averageScoreAndRanking.indexOf(",");
+		int seconColonPos = averageScoreAndRanking.indexOf(":", commaPos);
+		try
+		{
+			tempAverageScore = Double.parseDouble(
+					averageScoreAndRanking.substring(firstColonPos + 1, commaPos));
+
+		}
+		catch (NumberFormatException e)
+		{
+			tempAverageScore = -1.0;
+		}
+		tempRanking = averageScoreAndRanking.substring(seconColonPos + 2);
+		
+		tempStudent = fetchAStudentAndHisScores(conn, studentID);
+		if (tempStudent != null)
+		{
+			tempStudent.setAverageScore(tempAverageScore);
+			tempStudent.setRanking(tempRanking);
+		}
+		return tempStudent;
+	}
+	
+	/**
 	 * Gets a list of Student objects from the database.
 	 * @param conn
 	 * @return
 	 * @throws SQLException
 	 */
 	public List<Student> fetchStudents(Connection conn)
-		throws SQLException
+			throws SQLException
 	{
-		Student tempStudent;
 		List<Student> students = new ArrayList<>();
-		List<String> studentRecords = fetchStudentRecords(conn);
-		int firstAsterisk;
-		int secondAsterisk;
-		int thirdAsterisk;
-		String tempID;
-		String tempName;
-		String dobString;
-		LocalDate tempDOB;
-		String phoneNumber;
-		for (String item : studentRecords)
+		List<String> ids = new ArrayList<>();
+		String query;
+		
+		try (Statement stat = conn.createStatement())
 		{
-			firstAsterisk = item.indexOf("*");
-			secondAsterisk = item.indexOf("*", firstAsterisk + 1);
-			thirdAsterisk = item.lastIndexOf("*");
-			tempID = item.substring(0, firstAsterisk);
-			tempName = item.substring(firstAsterisk + 1, secondAsterisk);
-			dobString = item.substring(secondAsterisk + 1, thirdAsterisk);
-			try
+			query = "SELECT StudentID FROM Students";
+			try (ResultSet result = stat.executeQuery(query))
 			{
-				tempDOB = LocalDate.parse(dobString);
+				while (result.next())
+				{
+					ids.add(result.getString("StudentID"));
+				}
 			}
-			catch (DateTimeParseException e)
-			{
-				tempDOB = LocalDate.parse("1980-11-05");
-			}
-			phoneNumber = item.substring(thirdAsterisk + 1);
-			tempStudent = new Student(tempID, tempName, tempDOB, phoneNumber);
-			students.add(tempStudent);
-			
+		}
+		
+		for (String id : ids)
+		{
+			students.add(fetchAStudent(conn, id));
 		}
 		return students;
+		
 	}
 	
 	/**
-	 * Fetch the content of the Student table in the database.
+	 * Fetches the average score and ranking of a specific student 
+	 *  from the tables Students and Rankings in the database.
 	 * @param conn
+	 * @param studentID
 	 * @return
 	 * @throws SQLException
 	 */
-	private List<String> fetchStudentRecords(Connection conn)
+	private String fetchAverageScoreAndRanking(Connection conn, String studentID)
 		throws SQLException
 	{
-		List<String> list = new ArrayList<>();
-		String query = 
-				"SELECT"
-				+ " StudentID,"
-				+ " StudentName,"
-				+ " DateOfBirth,"
-				+ " PhoneNumber"
-				+ " FROM Students";
-		Statement stat = conn.createStatement();
-		ResultSet result = stat.executeQuery(query);
-		StringBuilder builder;
-		String s;
-		while (result.next())
+		StringBuilder builder= new StringBuilder();
+		String tempAverageScore;
+		String tempRanking;
+		String query = "{ call usp_Display_Information_And_Ranking_Of_A_Student(?) }";
+		try (CallableStatement stat = conn.prepareCall(query))
 		{
-			builder = new StringBuilder();
-			s = result.getString("StudentID");
-			builder.append(s.trim());
-			builder.append("*");
-			s = result.getString("StudentName");
- 			if (s == null)
+			stat.setString(1, studentID);
+			try (ResultSet result = stat.executeQuery())
 			{
-				builder.append("Not known");
+				while (result.next())
+				{
+					builder.append("Average Score: ");
+					tempAverageScore = result.getString("AverageScore") == null 
+							? "" : result.getString("AverageScore");
+					builder.append(tempAverageScore);
+					builder.append(", Ranking: ");
+					tempRanking = result.getString("Ranking") == null 
+							? "" : result.getString("Ranking").trim();
+					builder.append(tempRanking);
+				}
+				return builder.toString();
 			}
-			else
-			{
-				builder.append(s.trim());
-			}
- 			builder.append("*");
- 			s = result.getString("DateOfBirth");
-			if (s == null)
-			{
-				builder.append("Not known");
-			}
-			else
-			{
-				builder.append(s.trim());
-			}
-			builder.append("*");
-			s = result.getString("PhoneNumber");
-			if (s == null)
-			{
-				builder.append("Not known");
-			}
-			else
-			{
-				builder.append(s.trim());
-			}
-			list.add(builder.toString());
 		}
-		
+	}
+	
+	/**
+	 * Fetches the information and scores of a specific student from the database.
+	 * @param conn
+	 * @param studentID
+	 * @return
+	 * @throws SQLException
+	 */
+	private Student fetchAStudentAndHisScores(Connection conn, String studentID)
+		throws SQLException
+	{
+		Student tempStudent = fetchAStudentAndHisBasicInformation(conn, studentID);
+		if (tempStudent != null)
+		{
+			List<Subject> subjects = fetchScores(conn, studentID);
+			tempStudent.setSubjects(subjects);
+		}
+		return tempStudent;
+	}
+	
+//	public Student fetchAStudentAndHisScores(Connection conn, String studentID)
+//		throws SQLException
+//	{
+//		Student tempStudent = fetchAStudentAndHisBasicInformation(conn, studentID);
+//		List<Subject> subjects = fetchScores(conn, studentID);
+//		tempStudent.setSubjects(subjects);
+//		return tempStudent;
+//	}
+	
+	/**
+	 * Fetches scores of a specific student from the tables Scores,
+	 *  Students, and Subjects from the database.
+	 * @param conn The database connection.
+	 * @param studentID A string represents a student id.
+	 * @return A list
+	 * @throws SQLException
+	 */
+	private List<Subject> fetchScores(Connection conn, String studentID) 
+		throws SQLException
+	{
+		List<Subject> list = new ArrayList<>();
+		String tempSubjectCode;
+		String tempSubjectName;
+		double tempScore;
+		String query = "{ call usp_Display_Scores_Of_A_Student(?) }";
+		try (CallableStatement stat = conn.prepareCall(query))
+		{
+			stat.setString(1, studentID);
+			try (ResultSet result = stat.executeQuery())
+			{
+				while (result.next())
+				{
+					tempSubjectCode = result.getString("SubjectCode").trim();
+					tempSubjectName = result.getString("SubjectName").trim();
+					tempScore = Double.parseDouble(result.getString("Score"));   
+					list.add(new Subject(tempSubjectCode, tempSubjectName, tempScore));
+				}
+			}
+		}
 		return list;
+	}
+	
+	/**
+	 * Fetches a record from the Student table in the database,
+	 * and initialize a Student object from that record. 
+	 * @param conn The database connection.
+	 * @param studentID A string represents a student id.
+	 * @return A Student object.
+	 * @throws SQLException
+	 */
+	private Student fetchAStudentAndHisBasicInformation(Connection conn, String studentID)
+		throws SQLException
+	{
+		String query = "{ call usp_Display_A_Student(?) }";
+		Student tempStudent = null;
+		String tempID;
+		String tempName;
+		String strDOB;
+		String tempPhoneNumber;
+		try (CallableStatement stat = conn.prepareCall(query))
+		{
+			stat.setString(1, studentID);
+			try (ResultSet result = stat.executeQuery())
+			{
+				while (result.next())
+				{
+					tempID = result.getString("StudentID");
+					tempName = result.getString("StudentName");
+					strDOB = result.getString("DateOfBirth");
+					tempPhoneNumber = result.getString("PhoneNumber");
+					tempStudent = createAStudent(tempID,
+							tempName, strDOB, tempPhoneNumber);
+				}
+				return tempStudent;
+			}
+		}
+	}
+	
+	/**
+	 * Show the content of a list containing Subject objects.
+	 * @param subjects
+	 */
+	public void showSubjectList(List<Subject> subjects)
+	{
+		for (Subject item : subjects)
+		{
+			item.showMe();
+		}
 	}
 	
 	/**
@@ -129,9 +246,17 @@ public class DatabaseHandler
 	 */
 	public void showStudentList(List<Student> students)
 	{
-		for (Student item : students)
+		if (students.size() == 0)
 		{
-			System.out.println(item);
+			System.out.println("No records in the database.");
+		}
+		else
+		{
+			System.out.println("\n*** Detail information of all students in the database ***");
+			for (Student item : students)
+			{
+				item.showMe();
+			}
 		}
 	}
 	
@@ -139,12 +264,37 @@ public class DatabaseHandler
 	 * Show the content of a list containing String objects.
 	 * @param list
 	 */
-	private void showStringList(List<String> list)
+	public void showStringList(List<String> list)
 	{
 		for (String item : list)
 		{
 			System.out.println(item);
 		}
+	}
+	
+	/**
+	 * Creates a Student object.
+	 * @param id A string represents a student id.
+	 * @param name A string represents a student name.
+	 * @param strDOB A string represents a 
+	 * @param phoneNumber
+	 * @return A String object.
+	 */
+	private Student createAStudent(
+			String id, String name, String strDOB, String phoneNumber)
+	{
+		Student tempStudent;
+		LocalDate dateDOB;
+		try
+		{
+			dateDOB = LocalDate.parse(strDOB);
+		}
+		catch (DateTimeParseException | NullPointerException e)
+		{
+			dateDOB = null;
+		}
+		tempStudent = new Student(id, name, dateDOB, phoneNumber);
+		return tempStudent;
 	}
 	
 	/**
