@@ -44,24 +44,24 @@ public class Main_0
 //			Student student = dbHandler.fetchAStudentAndHisScores(conn, studentID);
 //			student.showMe();
 			
-//			5. Fetches the information, score of each subject, average scores,
-//			and ranking of a specific student
-//			String studentID = "s001";
-			String studentID = "s005";
-//			String studentID = "s100";
-			Student student = dbHandler.fetchAStudent(conn, studentID);
-			if (student == null)
-			{
-				System.out.println("\nNo student has id " + studentID);
-			}
-			else
-			{
-				student.showMe();
-			}
-			
-			System.out.println();
-			String s = dbHandler.fetchAverageScoreAndRanking(conn, studentID);
-			System.out.println(s);
+////			5. Fetches the information, score of each subject, average scores,
+////			and ranking of a specific student
+////			String studentID = "s001";
+//			String studentID = "s005";
+////			String studentID = "s100";
+//			Student student = dbHandler.fetchAStudent(conn, studentID);
+//			if (student == null)
+//			{
+//				System.out.println("\nNo student has id " + studentID);
+//			}
+//			else
+//			{
+//				student.showMe();
+//			}
+//			
+//			System.out.println();
+//			String s = dbHandler.fetchAverageScoreAndRanking(conn, studentID);
+//			System.out.println(s);
 		}
 		catch (SQLException e)
 		{

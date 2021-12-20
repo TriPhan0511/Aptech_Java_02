@@ -2,10 +2,19 @@ package version02;
 
 public class Subject 
 {
+//	Private instance variables
 	private String code;
 	private String name;
 	private double score;
 	
+//	A parameterized constructor
+	public Subject(String code, String name)
+	{
+		this.code = code;
+		this.name = name;
+	}
+	
+//	A parameterized constructor
 	public Subject(String code, String name, double score)
 	{
 		this.code = code;
@@ -13,6 +22,7 @@ public class Subject
 		this.score = score;
 	}
 	
+//	Getters
 	public String getCode()
 	{
 		return this.code;
@@ -28,6 +38,9 @@ public class Subject
 		return this.score;
 	}
 	
+	/**
+	 * Prints out the information of a Subject object to the console.
+	 */
 	public void showMe()
 	{
 		StringBuilder builder = new StringBuilder();
