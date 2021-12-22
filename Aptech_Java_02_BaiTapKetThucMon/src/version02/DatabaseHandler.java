@@ -19,107 +19,118 @@ import java.util.Properties;
 public class DatabaseHandler 
 {
 	/**
-	 * Deletes a Subject object.
-	 * @param conn
-	 * @param subject
-	 */
-//	public void deleteASubject(Connection conn, Subject subject)
-//	{
-//		
-//	}
-	
-	/**
-	 * Deletes a record in the Subjects table based. 
+	 * Deletes a record in the Subjects table based on a subject code. 
 	 * @param conn
 	 * @param subjectCode
 	 * @throws SQLException
 	 */
-	public void deleteASubjectRecord(Connection conn, String input)
+	public void deleteASubjectRecordBasedOnSubjectCode(Connection conn, String subjectCode)
 		throws SQLException
 	{
-		String query = "{ call usp_Delete_A_Subject(?) }";
+		String query = "{ call usp_Delete_A_Subject_Based_On_Subject_Code(?) }";
 		try (CallableStatement stat = conn.prepareCall(query))
 		{
-			stat.setString(1, input);
-			int affectedRows = stat.executeUpdate();
-			if (affectedRows != 0)
-			{
-				System.out.println("\n"
-						+ affectedRows
-						+ " record(s) in the Subjects table was deleted.");
-			}
+			stat.setString(1, subjectCode);
+			stat.executeUpdate();
 		}
 	}
 	
 	/**
-	 * Gets a subject code and a subject name from the user,
-	 * then based on that data, update a record in the Subjects table.
-	 * @param conn
-	 * @param existingSubjectCodes
-	 * @throws SQLException
-	 */
-	public void updateASubjectBasedOnUserInput(
-		Connection conn, List<String> existingSubjectCodes)
-		throws SQLException
-	{
-		String tempSubjectCode;
-		String tempSubjectName;
-		
-//		Validation: The entered subject code must exist in the Subjects table
-		while (true)
-		{
-			tempSubjectCode = Console.nextString("\nEnter a subject code: ");
-			if (existingSubjectCodes.indexOf(tempSubjectCode) == -1)
-			{
-				System.out.println("\nThe subject code " 
-						+ tempSubjectCode 
-						+ " does not exists in the Subjects table.");
-				System.out.println("Please re-enter another subject code.");
-			}
-			else
-			{
-				break;
-			}
-		}
-		tempSubjectName = Console.nextString("Enter a subject name: ");
-		updateASubjectRecord(conn, tempSubjectCode, tempSubjectName);
-	}
-	
-	/**
-	 * Updates a record in the Subjects table in the database.
+	 * Updates a subject name of a record in the Subjects table in the database.
 	 * @param conn
 	 * @param subjectCode
-	 * @param subjectName
+	 * @param newSubjectName
 	 * @throws SQLException
 	 */
 	public void updateASubjectRecord(
-		Connection conn, String subjectCode, String subjectName)
+		Connection conn, String subjectCode, String newSubjectName)
 		throws SQLException
 	{
 		String query = "{ call usp_Update_A_Subject(?, ?) }";
 		try (CallableStatement stat = conn.prepareCall(query))
 		{
 			stat.setString(1, subjectCode);
-			stat.setString(2, subjectName);
-			int affectedRow = stat.executeUpdate();
-			if (affectedRow != 0)
-			{
-				System.out.println("\nA record in the Subjects table was updated.");
-			}
+			stat.setString(2, newSubjectName);
+			stat.executeUpdate();
 		}
 	}
 	
 	/**
-	 * Fetches a list of Subject objects from Subjects table 
-	 * 	in the database.
-	 * @param conn
+	 * Fetches a list of strings represent subject codes
+	 * 	and subject names from the Subjects table in the database.
+	 * @param conn The database connection.
+	 * @param subjectName A string represents a subject name.
+	 * @return A list of strings.
+	 * @throws SQLException
+	 */
+	public List<String> fetchSubjectCodesAndSubjectNamesBasedOnName(
+			Connection conn, String subjectName)
+			throws SQLException
+	{
+		List<String> list = new ArrayList<>();
+		String tempItem;
+		String tempSubjectCode;
+		String tempSubjectName;
+		String query = 
+				"{ call usp_Display_SubjectCodes_And_SubjectNames_Based_On_A_SubjectName(?) }";
+		try (CallableStatement stat = conn.prepareCall(query))
+		{
+			stat.setString(1, subjectName);
+			try (ResultSet result = stat.executeQuery())
+			{
+				while (result.next())
+				{
+					tempSubjectCode = result.getString("SubjectCode").trim();
+					tempSubjectName = result.getString("SubjectName").trim();
+					tempItem = tempSubjectCode + "-" + tempSubjectName;
+					list.add(tempItem);
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * Fetches a string represents a subject code and a subject name
+	 * 	from the Subjects table in the database.
+	 * @param conn The database connection.
+	 * @param subjectName A string represents a subject name.
 	 * @return
 	 * @throws SQLException
 	 */
-	public List<Subject> fetchSubjects(Connection conn)
+	public List<String> fetchSubjectCodesBasedOnASubjectName(
+			Connection conn, String subjectName)
 		throws SQLException
 	{
-		List<Subject> subjects = new ArrayList<>();
+		List<String> list = new ArrayList<>();
+		String query = 
+				"{ call usp_Display_SubjectCodes_Based_On_A_Subject_Name(?) }";
+		try (CallableStatement stat = conn.prepareCall(query))
+		{
+			stat.setString(1, subjectName);
+			try (ResultSet result = stat.executeQuery())
+			{
+				while (result.next())
+				{
+					list.add(result.getString("SubjectCode"));
+				}
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * Fetches a list of strings which represents subject records 
+	 * 	from the Subjects table in the database. 
+	 * @param conn The database connection.
+	 * @return A string list containing subject records
+	 * @throws SQLException
+	 */
+	public List<String> fetchAllSubjectRecords(Connection conn)
+		throws SQLException
+	{
+		List<String> subjectRecords = new ArrayList<>();
 		String tempSubjectCode;
 		String tempSubjectName;
 		String query = "SELECT SubjectCode, SubjectName FROM Subjects";
@@ -131,26 +142,12 @@ public class DatabaseHandler
 		{
 			while (result.next())
 			{
-				tempSubjectCode = result.getString("SubjectCode");
-				tempSubjectName = result.getString("SubjectName");
-				subjects.add(new Subject(tempSubjectCode, tempSubjectName));
+				tempSubjectCode = result.getString("SubjectCode").trim();
+				tempSubjectName = result.getString("SubjectName").trim();
+				subjectRecords.add(tempSubjectCode + "-" + tempSubjectName);
 			}
 		}
-		return subjects;
-	}
-	
-	/**
-	 * Gets a subject code from user input, then base on that subject code,
-	 * fetches a Subject object from the Subject tables in the database.
-	 * @param conn
-	 * @return
-	 * @throws SQLException
-	 */
-	public Subject fetchASubjectFromUserInput(Connection conn)
-		throws SQLException
-	{
-		String tempSubjectCode = Console.nextString("\nEnter a subject code: ");
-		return fetchASubject(conn, tempSubjectCode);
+		return subjectRecords;
 	}
 	
 	/**
@@ -160,11 +157,10 @@ public class DatabaseHandler
 	 * @return
 	 * @throws SQLException
 	 */
-	public Subject fetchASubject(Connection conn, String subjectCode)
+	public List<String> fetchSubjectRecords(Connection conn, String subjectCode)
 		throws SQLException
 	{
-		Subject tempSubject = null;
-		String tempSubjectName;
+		List<String> list = new ArrayList<>();
 		String query = "{ call usp_Display_SubjectName(?) }";
 		try (CallableStatement stat = conn.prepareCall(query);) 
 		{
@@ -173,16 +169,25 @@ public class DatabaseHandler
 			{
 				while (result.next())
 				{
-					tempSubjectName = result.getString("SubjectName");
-					tempSubject = new Subject(subjectCode, tempSubjectName);
+					list.add(subjectCode);
+					list.add(result.getString("SubjectName"));
 				}
 			}
 		}
+		return list;
+	}
+	
+	public Subject fetchASubjectRecord(Connection conn, String subjectCode)
+			throws SQLException
+	{
+		Subject tempSubject = null;
+		String query = "{ call  }";
+		
 		return tempSubject;
 	}
 	
 	/**
-	 * Fetches the subject codes in the Subjects table from the database.
+	 * Fetches all of the subject codes in the Subjects table from the database.
 	 * @param conn
 	 * @return
 	 * @throws SQLException
@@ -207,64 +212,13 @@ public class DatabaseHandler
 	}
 	
 	/**
-	 * Gets data from user input, next creates a Subject object from 
-	 *  that data, then inserts that Subject object into the database.
-	 * @param conn
-	 * @param existingSubjectCodes
-	 * @throws SQLException
-	 */
-	public void insertASubjectFromUserInput(Connection conn, List<String> existingSubjectCodes)
-		throws SQLException
-	{
-		String tempSubjectCode;
-		String temmpSubjectName;
-		Subject tempSubject;
-		
-//		A subject code must have the length is equal to or less than 5,
-//		and it does not exist in the Subjects table in the database.
-		while (true)
-		{
-			 tempSubjectCode = Console.nextString("\nEnter a subject code: ");
-			 if (tempSubjectCode.length() > 5)
-			 {
-				 System.out.println("\nThe subject code should have length between 1 and 5");
-				 System.out.println("Please re-enter another subject code.");
-			 }
-			 else if (existingSubjectCodes.indexOf(tempSubjectCode) != -1) 
-			 {
-				 System.out.println("\nThe subject code you entered exists in the Subjects table in the database.");
-				 System.out.println("Please re-enter another subject code.");
-			 }
-			 else
-			 {
-				 break;
-			 }
-		}
-		temmpSubjectName = Console.nextString("Enter a subject name: ");
-		tempSubject = new Subject(tempSubjectCode, temmpSubjectName);
-		insertASubject(conn, tempSubject);
-	}
-	
-	/**
-	 * Insert a Subject object into the database.
-	 * @param conn
-	 * @param subject
-	 * @throws SQLException
-	 */
-	private void insertASubject(Connection conn, Subject subject)
-		throws SQLException
-	{
-		insertASubjectRecord(conn, subject.getCode(), subject.getName());
-	}
-	
-	/**
 	 * Insert a new record into the Subjects table from two Strings.
 	 * @param conn
 	 * @param subjectCode
 	 * @param subjectName
 	 * @throws SQLException
 	 */
-	private void insertASubjectRecord(
+	public void insertASubjectRecord(
 		Connection conn, String subjectCode, String subjectName)
 		throws SQLException
 	{
@@ -275,11 +229,7 @@ public class DatabaseHandler
 		{
 			stat.setString(1, subjectCode);
 			stat.setString(2, subjectName);
-			int affectedRow = stat.executeUpdate();
-			if (affectedRow != 0)
-			{
-				System.out.println("\nA new record is inserted into the Subjects table.");
-			}
+			stat.executeUpdate();
 		}
 	}
 	
@@ -481,25 +431,6 @@ public class DatabaseHandler
 							
 				}
 				return tempStudent;
-			}
-		}
-	}
-	
-	/**
-	 * Show the content of a list containing Subject objects.
-	 * @param subjects
-	 */
-	public void showSubjectList(List<Subject> subjects)
-	{
-		if (subjects.size() == 0)
-		{
-			System.out.println("\nCurrently there is no subject record in the database.");
-		}
-		else
-		{
-			for (Subject item : subjects)
-			{
-				item.showMe();
 			}
 		}
 	}

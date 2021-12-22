@@ -38,18 +38,37 @@ public class Subject
 		return this.score;
 	}
 	
+//	Setter
+	public void setName(String newName) {
+		this.name = newName;
+	}
+	
 	/**
 	 * Prints out the information of a Subject object to the console.
 	 */
 	public void showMe()
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append("Subject Code: ");
+		builder.append("\nSubject Code: ");
 		builder.append(this.code);
 		builder.append(", Subject Name: ");
 		builder.append(this.name);
 		builder.append(", Score: ");
 		builder.append(score);
+		System.out.println(builder.toString());
+	}
+	
+	/**
+	 *  Prints out the information of a Subject object without the score field 
+	 *   to the console.
+	 */
+	public void showMeWithoutScore()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("Subject Code: ");
+		builder.append(this.code);
+		builder.append(", Subject Name: ");
+		builder.append(this.name);
 		System.out.println(builder.toString());
 	}
 }

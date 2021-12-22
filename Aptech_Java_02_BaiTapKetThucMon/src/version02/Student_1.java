@@ -91,7 +91,7 @@ public class Student_1
 			for (Subject item : subjects)
 			{
 //				System.out.println(item);
-				item.showMe();
+				item.showMeWithoutScore();
 			}
 		}
 	}

@@ -131,7 +131,7 @@ public class Student
 		{
 			for (Subject item : subjects)
 			{
-				item.showMe();
+				item.showMeWithoutScore();
 			}
 		}
 		
